@@ -1,6 +1,9 @@
 package app
 
-import "net/http"
+import (
+	"database/sql"
+	"net/http"
+)
 
 /*
 
@@ -65,13 +68,27 @@ type TelegramPayload struct {
 	} `json:"message"`
 }
 
+type UserData struct {
+	Username       string
+	ThreadInfo     ThreadInfo
+	CommandMessage CommandMessage
+}
+
 type CommandMessage struct {
 	Command string
 	Message string
 }
 
+type ThreadInfo struct {
+	MySQLId  int
+	ThreadId string
+}
+
 type App struct {
-	TelegramBotToken string
-	Client           *http.Client
-	Router           *http.ServeMux
+	TelegramBotToken  string
+	OpenAIToken       string
+	OpenAIAssistantId string
+	Client            *http.Client
+	Router            *http.ServeMux
+	MySQL             *sql.DB
 }

@@ -30,9 +30,13 @@ curl -F "url=[URL_ENDPOINT]" https://api.telegram.org/bot[]BOT_TOKEN/setWebhook
 func NewApp() App {
 	log.Println("App init")
 	app := App{
-		TelegramBotToken: os.Getenv("GYM_MENTOR_TG_BOT_TOKEN"),
-		Client:           newHttpClient(),
+		TelegramBotToken:  os.Getenv("GYM_MENTOR_TG_BOT_TOKEN"),
+		Client:            newHttpClient(),
+		OpenAIToken:       os.Getenv("GYM_MENTOR_OPENAI_TOKEN"),
+		OpenAIAssistantId: os.Getenv("GYM_MENTOR_OPENAI_ASSISTANT_ID"),
 	}
+	app.createMySQLConnection()
+	app.createMysqlTables()
 	app.newRouter()
 	app.handleRouter()
 

@@ -3,7 +3,7 @@ package app
 import "fmt"
 
 /* Create new gym routine */
-func (app *App) newRoutine(tgPayload TelegramPayload) {
+func (app *App) newRoutine(userData UserData) {
 	/* TODO:
 
 	Controlar si un usuario puede tener múltiples rutinas
@@ -22,7 +22,7 @@ func (app *App) newRoutine(tgPayload TelegramPayload) {
 
 	*/
 
-	fmt.Printf("TODO: proceso de nueva rutina para: %v\n", tgPayload.Message.From.FirstName)
-	app.sendTelegramMessageHTML("rutina creada", fmt.Sprint(tgPayload.Message.Chat.ID))
+	fmt.Printf("TODO: proceso de nueva rutina para: %v\n", userData.Username)
+	app.sendTelegramMessageHTML("rutina creada", fmt.Sprint(userData.Username))
 
 }

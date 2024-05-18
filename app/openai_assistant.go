@@ -1,4 +1,4 @@
-package openai
+package app
 
 import (
 	"bytes"
@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func CreateThread(apiKey string) (string, error) {
+func createThread(apiKey string, client *http.Client) (string, error) {
 	endpoint := "https://api.openai.com/v1/threads"
 
 	// Crear la solicitud HTTP
@@ -26,7 +26,6 @@ func CreateThread(apiKey string) (string, error) {
 	req.Header.Set("OpenAI-Beta", "assistants=v2")
 
 	// Hacer la solicitud
-	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("error al hacer la solicitud: %v", err)
@@ -60,7 +59,7 @@ func CreateThread(apiKey string) (string, error) {
 	return threadID, nil
 }
 
-func AddMessageToThread(apiKey, threadID, role, content string) (string, error) {
+func addMessageToThread(apiKey, threadID, role, content string) (string, error) {
 	endpoint := fmt.Sprintf("https://api.openai.com/v1/threads/%s/messages", threadID)
 
 	// Datos para la solicitud
@@ -116,7 +115,7 @@ func AddMessageToThread(apiKey, threadID, role, content string) (string, error) 
 	return messageID, nil
 }
 
-func CreateRun(apiKey, threadID, assistantID, instructions string) (string, error) {
+func createRun(apiKey, threadID, assistantID, instructions string) (string, error) {
 	endpoint := fmt.Sprintf("https://api.openai.com/v1/threads/%s/runs", threadID)
 
 	requestBody, err := json.Marshal(map[string]interface{}{
@@ -165,7 +164,7 @@ func CreateRun(apiKey, threadID, assistantID, instructions string) (string, erro
 	return runID, nil
 }
 
-func PollRunStatus(apiKey, threadID, runID string) (string, error) {
+func pollRunStatus(apiKey, threadID, runID string) (string, error) {
 	endpoint := fmt.Sprintf("https://api.openai.com/v1/threads/%s/runs/%s", threadID, runID)
 
 	for {
@@ -212,8 +211,8 @@ func PollRunStatus(apiKey, threadID, runID string) (string, error) {
 	}
 }
 
-func GetLastAssistantMessage(apiKey, threadID string) (string, error) {
-	messages, err := GetMessagesFromThread(apiKey, threadID)
+func getLastAssistantMessage(apiKey, threadID string) (string, error) {
+	messages, err := getMessagesFromThread(apiKey, threadID)
 	if err != nil {
 		return "", fmt.Errorf("error al obtener el último mensaje del asistente en el thread: %v", err)
 	}
@@ -247,7 +246,7 @@ func GetLastAssistantMessage(apiKey, threadID string) (string, error) {
 	return lastMessage, nil
 }
 
-func GetMessagesFromThread(apiKey, threadID string) ([]map[string]interface{}, error) {
+func getMessagesFromThread(apiKey, threadID string) ([]map[string]interface{}, error) {
 	url := fmt.Sprintf("https://api.openai.com/v1/threads/%s/messages", threadID)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {

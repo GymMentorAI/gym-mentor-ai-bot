@@ -14,21 +14,50 @@ func (app *App) index(w http.ResponseWriter, r *http.Request) {
 	if deserializationError != nil {
 		log.Println("tgPayload deserializationError", deserializationError)
 	}
+	tgUsername := tgPayload.Message.From.Username
+	tgText := tgPayload.Message.Text
+	tgCommandMessage := getCommandAndMessage(tgText)
 
-	tgPayload.CommandMessage = getCommandAndMessage(tgPayload.Message.Text)
+	// Recuperar threads del usuario
+	dataThreads := app.getThreadInfo(tgUsername)
 
-	log.Println("CommandMessage", tgPayload.CommandMessage.Command)
-
-	if tgPayload.CommandMessage.Command == "start" {
-		app.start(tgPayload)
+	if dataThreads.ThreadId == "" {
+		// El usuario no tiene ningún thread previo
+		createThreadId, createThreadIdError := createThread(app.OpenAIToken, app.Client)
+		if createThreadIdError != nil {
+			log.Println(createThreadIdError)
+			// Cómo se gestiona un create thread error. Mandar un mensaje de volver a intentar en un rato, por ejemplo
+			app.sendTelegramMessageHTML("Algo ha fallado, intentarlo de nuevo en un rato", tgUsername)
+			return
+		}
+		dataThreads.ThreadId = createThreadId
+		// Insertar en la base de datos
+		insertId, insertIdError := app.insertUsernameAndThreadId(tgUsername, createThreadId)
+		if insertIdError != nil {
+			log.Println("ERROR:", insertIdError)
+		} else {
+			dataThreads.MySQLId = insertId
+		}
 	}
 
-	if tgPayload.CommandMessage.Command == "new" {
-		app.newRoutine((tgPayload))
+	// dataThreads ya tiene un identificador, bien porque se ha recuperado o porque se ha creado nuevo
+	// Tampoco es necesario estar pasando todo el rato el payload de telegram que tiene bastante ruido, se podría simplificar
+
+	var userData UserData
+	userData.Username = tgUsername
+	userData.CommandMessage = tgCommandMessage
+	userData.ThreadInfo = dataThreads
+
+	if userData.CommandMessage.Command == "start" {
+		app.start(userData)
 	}
 
-	if tgPayload.CommandMessage.Command == "" {
-		app.freeText(tgPayload)
+	if userData.CommandMessage.Command == "new" {
+		app.newRoutine(userData)
+	}
+
+	if userData.CommandMessage.Command == "" {
+		app.freeText(userData)
 	}
 
 	w.Write([]byte("OK"))
