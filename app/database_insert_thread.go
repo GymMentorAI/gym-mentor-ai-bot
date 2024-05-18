@@ -1,10 +1,10 @@
 package app
 
 /* insert in openai_threads new record */
-func (app *App) insertUsernameAndThreadId(username, threadId string) (int, error) {
+func (app *App) insertUsernameAndThreadId(username, chatId, threadId string) (int, error) {
 
-	insertQuery := `INSERT INTO openai_threads (username, thread_id) VALUES (?, ?)`
-	inserResult, insertError := app.MySQL.Exec(insertQuery, username, threadId)
+	insertQuery := `INSERT INTO openai_threads (username, chat_id, thread_id) VALUES (?, ?, ?)`
+	inserResult, insertError := app.MySQL.Exec(insertQuery, username, chatId, threadId)
 	if insertError != nil {
 		return 1, insertError
 	}

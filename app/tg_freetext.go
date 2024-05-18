@@ -9,6 +9,7 @@ import (
 func (app *App) freeText(userData UserData) {
 	//model := "gpt4o"
 	prompt := userData.CommandMessage.Message
+	fmt.Printf("Prompt: %s\n", prompt)
 	//temperature := 0.7
 
 	// Comento esta parte porque la gestión del thread se ha hecho previamente
@@ -54,5 +55,11 @@ func (app *App) freeText(userData UserData) {
 
 	fmt.Printf("Último mensaje del thread:\n%s\n", message)
 
-	app.sendTelegramMessageHTML(message, fmt.Sprint(userData.Username))
+	// Asegurarse de que el mensaje no sea demasiado largo
+	if len(message) > 4096 {
+		log.Println("El mensaje es demasiado largo para enviarlo a Telegram")
+		return
+	}
+
+	app.sendTelegramMessageHTML(fmt.Sprint(message), userData.Username, userData.ChatId)
 }

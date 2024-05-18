@@ -9,6 +9,7 @@ func (app *App) createMysqlTables() {
 	CREATE TABLE IF NOT EXISTS openai_threads (
 		id INTEGER auto_increment NOT NULL,
 		username varchar(200) NOT NULL,
+		chat_id varchar(200) NOT NULL,
 		thread_id varchar(200) NOT NULL,
 		PRIMARY KEY (ID)
 	)

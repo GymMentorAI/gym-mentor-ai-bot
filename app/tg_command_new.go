@@ -23,6 +23,6 @@ func (app *App) newRoutine(userData UserData) {
 	*/
 
 	fmt.Printf("TODO: proceso de nueva rutina para: %v\n", userData.Username)
-	app.sendTelegramMessageHTML("rutina creada", fmt.Sprint(userData.Username))
+	app.sendTelegramMessageHTML("rutina creada", fmt.Sprint(userData.Username), fmt.Sprint(userData.ChatId))
 
 }

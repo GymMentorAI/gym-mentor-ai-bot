@@ -2,6 +2,7 @@ package app
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 )
@@ -15,11 +16,12 @@ func (app *App) index(w http.ResponseWriter, r *http.Request) {
 		log.Println("tgPayload deserializationError", deserializationError)
 	}
 	tgUsername := tgPayload.Message.From.Username
+	tgChatId := fmt.Sprint(tgPayload.Message.Chat.ID)
 	tgText := tgPayload.Message.Text
 	tgCommandMessage := getCommandAndMessage(tgText)
 
 	// Recuperar threads del usuario
-	dataThreads := app.getThreadInfo(tgUsername)
+	dataThreads := app.getThreadInfo(tgChatId)
 
 	if dataThreads.ThreadId == "" {
 		// El usuario no tiene ningún thread previo
@@ -27,12 +29,12 @@ func (app *App) index(w http.ResponseWriter, r *http.Request) {
 		if createThreadIdError != nil {
 			log.Println(createThreadIdError)
 			// Cómo se gestiona un create thread error. Mandar un mensaje de volver a intentar en un rato, por ejemplo
-			app.sendTelegramMessageHTML("Algo ha fallado, intentarlo de nuevo en un rato", tgUsername)
+			app.sendTelegramMessageHTML("Algo ha fallado, intentarlo de nuevo en un rato", tgUsername, tgChatId)
 			return
 		}
 		dataThreads.ThreadId = createThreadId
 		// Insertar en la base de datos
-		insertId, insertIdError := app.insertUsernameAndThreadId(tgUsername, createThreadId)
+		insertId, insertIdError := app.insertUsernameAndThreadId(tgUsername, tgChatId, createThreadId)
 		if insertIdError != nil {
 			log.Println("ERROR:", insertIdError)
 		} else {
@@ -45,6 +47,7 @@ func (app *App) index(w http.ResponseWriter, r *http.Request) {
 
 	var userData UserData
 	userData.Username = tgUsername
+	userData.ChatId = tgChatId
 	userData.CommandMessage = tgCommandMessage
 	userData.ThreadInfo = dataThreads
 

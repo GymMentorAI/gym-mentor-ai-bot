@@ -70,6 +70,7 @@ type TelegramPayload struct {
 
 type UserData struct {
 	Username       string
+	ChatId         string
 	ThreadInfo     ThreadInfo
 	CommandMessage CommandMessage
 }
